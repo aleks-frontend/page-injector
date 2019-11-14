@@ -1,3 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Testing Chart JS</title>
+  <style>
+    body {
+      margin: 0;
+    }
+
+    .pageInjector-master {
+      display: none;
+      width: 400px;
+      background: #e3e3e3;
+    }
+
+    .pageInjector-target {
+      margin-top: 20px;
+      width: 400px;
+      background: tomato;
+    }
+
+    .page {
+      display: flex;
+      flex-direction: column;
+      margin: 0 auto;
+      width: 400px;
+      height: 500px;
+      background: #e3e3e3;
+    }
+
+    .header,
+    .footer {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100px;
+      background: wheat;
+    }
+
+    .body {
+      flex: 1;
+    }
+
+    .footer {
+      background: tomato;
+    }
+
+    .u-hide {
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="pageInjector-master">
+    Lorem ipsum dolor sit amet consectetur adipisicing elit. Exercitationem sit dicta delectus provident? Quia odit
+    quasi porro nisi distinctio! Repellendus voluptate quasi, dolorem voluptatibus perferenfdis id impedit animi porro
+    qui? Lorem ipsum dolor sit amet consectetur adipisicing elit. Exercitationem sit dicta delectus provident? Quia odit
+    quasi porro nisi distinctio! Repellendus voluptate quasi, dolorem voluptatibus perferendis id impedits animi porro
+    qui? Lorem ipsum dolor sit amet consectetur adipisicing elit. Exercitationem sit dicta delectus provident? Quia odit
+    quasi porro nisi distinctio! Repellendus voluptate quasi, dolorem voluptatibus perferendis id impedit animi porro
+    qui?12 12k3j12309182 019283 01298301928 01 01928 3012983 0123Lorem ipsum dolor sit amet consectetur adipisicing
+    elit. Exercitationem sit dicta delectus provident? Quia odit
+    quasi porro nisi distinctio! Repellendus voluptate quasi, dolorem voluptatibus perferenfdis id impedit animi porro
+    qui? Lorem ipsum dolor sit amet consectetur adipisicing elit. Exercitationem sit dicta delectus provident? Quia odit
+    quasi porro nisi distinctio! Repellendus voluptate quasi, dolorem voluptatibus perferendis id impedits animi porro
+    qui? Lorem ipsum dolor sit amet consectetur adipisicing elit. Exercitationem sit dicta delectus provident? Quia odit
+    quasi porro nisi distinctio! Repellendus voluptate quasi, dolorem voluptatibus perferendis id impedit animi porro
+    qui?12 12k3j12309182 019283 01298301928 01 01928 3012983 0123Lorem ipsum dolor sit amet consectetur adipisicing
+    elit. Exercitationem sit dicta delectus provident? Quia odit
+    quasi porro nisi distinctio! Repellendus voluptate quasi, dolorem voluptatibus perferenfdis id impedit animi porro
+    qui? Lorem ipsum dolor sit amet consectetur adipisicing elit. Exercitationem sit dicta delectus provident? Quia odit
+    quasi porro nisi distinctio! Repellendus voluptate quasi, dolorem voluptatibus perferendis id impedits animi porro
+    qui? Lorem ipsum dolor sit amet consectetur adipisicing elit. Exercitationem sit dicta delectus provident? Quia odit
+    quasi porro nisi distinctio! Repellendus voluptate quasi, dolorem voluptatibus perferendis id impedit animi porro
+    qui?12 12k3j12309182 019283 01298301928 01 01928 3012983 0123quasi porro nisi distinctio! Repellendus voluptate
+    quasi, dolorem voluptatibus perferenfdis id impedit animi porro
+    qui? Lorem ipsum dolor sit amet consectetur adipisicing elit. Exercitationem sit dicta delectus provident? Quia odit
+    quasi porro nisi distinctio! Repellendus voluptate quasi, dolorem voluptatibus perferendis id impedits animi porro
+    qui? Lorem ipsum dolor sit amet consectetur adipisicing elit. Exercitationem sit dicta delectus provident? Quia odit
+    quasi porro nisi distinctio! Repellendus voluptate quasi, dolorem voluptatibus perferendis id impedit animi
+    porroqui? Lorem ipsum dolor sit amet consectetur adipisicing elit. Exercitationem sit dicta delectus provident? Quia
+    odit
+    quasi porro nisi distinctio! Repellendus voluptate quasi, dolorem voluptatibus perferendis id impedit animi porro
+    qui?12 12k3j12309182 019283 01298301928 01 01928 3012983 0123quasi porro nisi distinctio! Repellendus voluptate
+    quasi, dolorem voluptatibus perferenfdis id impedit animi porro
+  </div>
+  <div class="pageInjector-target"></div>
+  <div class="pageInjector-container"></div>
+  <script>
+    function pageInjector() {
+      const words = document.querySelector('.pageInjector-master').innerText.split(' ');
+      const dynamicPagesContainer = document.querySelector('.pageInjector-container');
+      const fragment = document.createDocumentFragment();
+      const target = document.querySelector('.pageInjector-target');
+      let targetSlots = [];
+
+      target.classList.remove('u-hide');
+      clearDiv(target);
+
+      for (const word of words) {
+        if (target.offsetHeight < 950) {
+          target.innerHTML += `${word} `;
+        } else {
+          targetSlots.push(target.innerHTML);
+          clearDiv(target);
+        }
+      }
+
+      targetSlots.push(target.innerHTML);
+      target.classList.add('u-hide');
+
+      clearDiv(dynamicPagesContainer);
+
+      for (const slot of targetSlots) {
+        const page = document.createElement('div');
+        page.classList.add('page');
+        page.style.cssText = `
+            overflow: hidden;
+            position: relative;
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            flex-direction: column;          
+          `;
+
+        const bleed = document.createElement('div');
+        bleed.classList.add('bleed');
+        bleed.style.cssText = `
+            position: absolute;
+            top: 4.41mm;
+            right: 4.41mm;
+            bottom: 4.41mm;
+            left: 4.41mm;
+          `;
+        page.appendChild(bleed);
+
+        const fit = document.createElement('div');
+        fit.classList.add('fit', 'container');
+        bleed.appendChild(fit);
+
+        const header = document.createElement('div');
+        header.classList.add('header');
+        header.style.cssText = `
+			height: 100px; 
+			background: tomato;
+			display: flex;
+            align-items: center;
+            justify-content: center;
+          `;
+        header.innerHTML = 'Header';
+
+        const footer = document.createElement('div');
+        footer.classList.add('footer');
+        footer.style.cssText = `
+			height: 100px; 
+			background: wheat;
+			display: flex;
+            align-items: center;
+            justify-content: center;
+          `;
+        footer.innerHTML = 'Footer';
+
+        const body = document.createElement('div');
         body.classList.add('body');
         body.style.cssText = 'flex: 1;';
 
