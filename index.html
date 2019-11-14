@@ -1,0 +1,26 @@
+        body.classList.add('body');
+        body.style.cssText = 'flex: 1;';
+
+        fit.appendChild(header);
+        fit.appendChild(body);
+        fit.appendChild(footer);
+
+        body.innerHTML = slot;
+
+        fragment.appendChild(page);
+      }
+
+      dynamicPagesContainer.appendChild(fragment);
+    }
+
+    function clearDiv(element) {
+      while (element.firstChild) {
+        element.removeChild(element.firstChild);
+      }
+    }
+
+    pageInjector();      
+  </script>
+</body>
+
+</html>
