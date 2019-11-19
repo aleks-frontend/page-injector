@@ -90,102 +90,134 @@
   <div class="pageInjector-target"></div>
   <div class="pageInjector-container"></div>
   <script>
-    function pageInjector() {
-      const words = document.querySelector('.pageInjector-master').innerText.split(' ');
-      const dynamicPagesContainer = document.querySelector('.pageInjector-container');
-      const fragment = document.createDocumentFragment();
-      const target = document.querySelector('.pageInjector-target');
-      let targetSlots = [];
+      function pageInjector({ 
+        headerHeight=100, 
+        footerHeight=100, 
+        bodyPaddingTop=20, 
+        bodyPaddingBottom=20 
+      } = {}) {
+        const words = document.querySelector('.pageInjector-master').innerText.split(' ');
+        const dynamicPagesContainer = document.querySelector('.pageInjector-container');
+        const fragment = document.createDocumentFragment();
+        const tempTarget = document.querySelector('.pageInjector-target');
+        const bleedHeight = getBleedHeightInPx();
+        let targetSlots = []; 
+        
+        const maxHeight = window.innerHeight - headerHeight - footerHeight - bodyPaddingTop - bodyPaddingBottom - bleedHeight;
 
-      target.classList.remove('u-hide');
-      clearDiv(target);
+        tempTarget.classList.remove('u-hide');
+        clearDiv(tempTarget);
 
-      for (const word of words) {
-        if (target.offsetHeight < 950) {
-          target.innerHTML += `${word} `;
-        } else {
-          targetSlots.push(target.innerHTML);
-          clearDiv(target);
+        for ( const word of words ) {
+          if ( tempTarget.offsetHeight < maxHeight ) {
+            tempTarget.innerHTML += `${word} `;
+          } else {
+            targetSlots.push(tempTarget.innerHTML);
+            clearDiv(tempTarget);
+          }
         }
-      }
 
-      targetSlots.push(target.innerHTML);
-      target.classList.add('u-hide');
+        targetSlots.push(tempTarget.innerHTML);
+        tempTarget.classList.add('u-hide');
 
-      clearDiv(dynamicPagesContainer);
+        clearDiv(dynamicPagesContainer);
 
-      for (const slot of targetSlots) {
-        const page = document.createElement('div');
-        page.classList.add('page');
-        page.style.cssText = `
+        for ( const slot of targetSlots ) {
+          const page = document.createElement('div');
+          page.classList.add('page');
+          page.style.cssText = `
             overflow: hidden;
             position: relative;
             height: 100vh;
             width: 100vw;
             display: flex;
             flex-direction: column;          
-          `;
-
-        const bleed = document.createElement('div');
-        bleed.classList.add('bleed');
-        bleed.style.cssText = `
+          `;         
+          
+          const bleed = document.createElement('div');
+          bleed.classList.add('bleed');
+          bleed.style.cssText = `
             position: absolute;
             top: 4.41mm;
             right: 4.41mm;
             bottom: 4.41mm;
             left: 4.41mm;
           `;
-        page.appendChild(bleed);
+          page.appendChild(bleed);
+          
+          const fit = document.createElement('div');
+          fit.classList.add('fit', 'container', 'u-flex-column');
+          bleed.appendChild(fit);
 
-        const fit = document.createElement('div');
-        fit.classList.add('fit', 'container');
-        bleed.appendChild(fit);
-
-        const header = document.createElement('div');
-        header.classList.add('header');
-        header.style.cssText = `
-			height: 100px; 
+          const header = document.createElement('div');
+          header.classList.add('header');
+          header.style.cssText = `
+			flex-basis: ${headerHeight}px; 
+            flex-shrink: 0;
 			background: tomato;
 			display: flex;
             align-items: center;
             justify-content: center;
           `;
-        header.innerHTML = 'Header';
+          header.innerHTML = 'Header';
 
-        const footer = document.createElement('div');
-        footer.classList.add('footer');
-        footer.style.cssText = `
-			height: 100px; 
+          const footer = document.createElement('div');
+          footer.classList.add('footer');
+          footer.style.cssText = `
+			flex-basis: ${footerHeight}px; 
+            flex-shrink: 0;
 			background: wheat;
 			display: flex;
             align-items: center;
             justify-content: center;
           `;
-        footer.innerHTML = 'Footer';
+          footer.innerHTML = 'Footer';
 
-        const body = document.createElement('div');
-        body.classList.add('body');
-        body.style.cssText = 'flex: 1;';
+          const body = document.createElement('div');
+          body.classList.add('body');
+          body.style.cssText = `
+			flex: 1;
+			padding-top: ${bodyPaddingTop}px;
+			padding-bottom: ${bodyPaddingBottom}px;
+          `;
 
-        fit.appendChild(header);
-        fit.appendChild(body);
-        fit.appendChild(footer);
+          fit.appendChild(header);
+          fit.appendChild(body);
+          fit.appendChild(footer);
 
-        body.innerHTML = slot;
+          body.innerHTML = slot;
 
-        fragment.appendChild(page);
+          fragment.appendChild(page);
+        }
+
+        dynamicPagesContainer.appendChild(fragment);
       }
 
-      dynamicPagesContainer.appendChild(fragment);
-    }
-
-    function clearDiv(element) {
-      while (element.firstChild) {
-        element.removeChild(element.firstChild);
+      // Helper function for clearing div's html
+      function clearDiv(element) {
+        while (element.firstChild) {
+          element.removeChild(element.firstChild);
+        }
       }
-    }
+      
+      // Helper function for getting the bleed dimensions in px
+      function getBleedHeightInPx() {
+        // Creating temporary div with height set in mm and appending it to body
+        const tempBleedDiv = document.createElement('div');
+        tempBleedDiv.style.height = '8.82mm';
+        document.body.appendChild(tempBleedDiv);
+        
+        // Getting new element's height in px and putting it in a variable
+        const bleedHeightInPx = tempBleedDiv.offsetHeight;
+        
+        // Removing temporary div from the div as we no longer need it
+        tempBleedDiv.remove();
+        
+        // Returning the value in px
+        return bleedHeightInPx;
+      }
 
-    pageInjector();      
+      pageInjector();
   </script>
 </body>
 
