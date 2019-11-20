@@ -96,32 +96,120 @@
         bodyPaddingTop=20, 
         bodyPaddingBottom=20 
       } = {}) {
-        const words = document.querySelector('.pageInjector-master').innerText.split(' ');
         const dynamicPagesContainer = document.querySelector('.pageInjector-container');
         const fragment = document.createDocumentFragment();
         const tempTarget = document.querySelector('.pageInjector-target');
         const bleedHeight = getBleedHeightInPx();
         let targetSlots = []; 
-        
+        let wordObjArray = [];
+        let activeContainer = '';
         const maxHeight = window.innerHeight - headerHeight - footerHeight - bodyPaddingTop - bodyPaddingBottom - bleedHeight;
+        
+        // Getting the original html code of the source master element
+        // together with <token> tags
+        let wordsHTML = document.querySelector('.pageInjector-master').innerHTML;
+
+        // Replace the rich text html elements with strings,
+        // so we can keep them when using innerText to remove all the <token> tags
+        let strippedWordsHTML = wordsHTML
+          .replace(/<h1>/gi, ' [h1] ')
+          .replace(/<\/h1>/gi, ' [/h1] ')
+          .replace(/<p>/gi, ' [p] ')
+          .replace(/<\/p>/gi, ' [/p] ');    
+        
+        // Creating a temporary placeholder div that we will use just to inject our custom
+        // HTML string and use innerText on it to keep only our custom rich text tags and remove <token> tags
+        const tempConverterDiv = document.createElement('div');
+        tempConverterDiv.innerHTML = strippedWordsHTML;
+        strippedWordsHTML = tempConverterDiv.innerText;        
+        
+		// Breaking the formated HTML string into an array or words and custom tags
+        const formatedWordsArray = strippedWordsHTML.split(' ');
+        
+        // Looping the formatedWordsArray to build a wordObjArray which will be an array of objects
+        // Objects will hold all the information required for each item in the formatedWordsArray        
+        for ( const word of formatedWordsArray ) {
+          const wordObj = {
+            characters: '',
+            tagInfo: {
+              isTag: false,
+              type: ''
+            }
+          };
+          
+          // Updating tagInfo properties in case of the custom tag
+          switch(word) {
+            case '[h1]':
+              wordObj.tagInfo.isTag = true;
+              wordObj.tagInfo.type = 'h1Open';
+              break;
+            case '[/h1]':
+              wordObj.tagInfo.isTag = true;
+              wordObj.tagInfo.type = 'h1Close';
+              break;
+            case '[p]':
+              wordObj.tagInfo.isTag = true;
+              wordObj.tagInfo.type = 'pOpen';
+              break;
+            case '[/p]':
+              wordObj.tagInfo.isTag = true;
+              wordObj.tagInfo.type = 'pClose';
+              break;
+            default:
+              wordObj.tagInfo.isTag = false;
+              wordObj.tagInfo.type = '';
+          }
+          
+          // characters property should be se for each word item
+          wordObj.characters = word;
+          
+          // In the end we push the newly created object to the wordObjArray[]
+          wordObjArray.push(wordObj);
+        }                        
 
         tempTarget.classList.remove('u-hide');
         clearDiv(tempTarget);
-
-        for ( const word of words ) {
-          if ( tempTarget.offsetHeight < maxHeight ) {
-            tempTarget.innerHTML += `${word} `;
+        
+        // Looping the wordObjArray[] to create and fill targetSlots[] array
+        // targetSlots[] array will be used to group word objects by page
+        for ( const wordObj of wordObjArray ) {
+          let formated = '';
+          
+          if ( wordObj.tagInfo.isTag ) {
+            switch(wordObj.tagInfo.type) {
+              case 'h1Open':
+                const heading1 = document.createElement('h1');
+                tempTarget.appendChild(heading1);
+                activeContainer = heading1;
+                break;
+              case 'pOpen':
+                const paragraph = document.createElement('p');
+                tempTarget.appendChild(paragraph);
+                activeContainer = paragraph;
+                break;
+            }
           } else {
+            formated = wordObj.characters + ' ';
+          }          
+          
+          if ( tempTarget.offsetHeight < maxHeight ) {
+            activeContainer.innerHTML += formated;
+          } else {
+            const overlappingActiveContainer = activeContainer;
+            activeContainer.remove();
             targetSlots.push(tempTarget.innerHTML);
             clearDiv(tempTarget);
+            tempTarget.appendChild(overlappingActiveContainer);
           }
+          
         }
 
         targetSlots.push(tempTarget.innerHTML);
-        tempTarget.classList.add('u-hide');
+        tempTarget.classList.add('u-hide');        
 
         clearDiv(dynamicPagesContainer);
 
+        // Looping the targetSlots[] array to generate pages and inject the content
         for ( const slot of targetSlots ) {
           const page = document.createElement('div');
           page.classList.add('page');
@@ -205,7 +293,7 @@
         // Creating temporary div with height set in mm and appending it to body
         const tempBleedDiv = document.createElement('div');
         tempBleedDiv.style.height = '8.82mm';
-        document.body.appendChild(tempBleedDiv);
+		document.body.appendChild(tempBleedDiv);
         
         // Getting new element's height in px and putting it in a variable
         const bleedHeightInPx = tempBleedDiv.offsetHeight;
